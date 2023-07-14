@@ -1,32 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using myapp;
 
 namespace myApp
-{
-
-    // Patron de cancelacion de tareas
-    public static class TaskExetensionMethods
-    {
-
-        public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
-        {
-            var taskCompletion = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            using (cancellationToken.Register(state =>
-            {
-                ((TaskCompletionSource<object>)state).TrySetResult(null);
-            }, taskCompletion))
-            {
-                var taskResult = await Task.WhenAny(task, taskCompletion.Task);
-                if (taskResult == taskCompletion.Task)
-                {
-                    throw new OperationCanceledException(cancellationToken);
-                }
-
-                return await task;
-            }
-        }
-    }
+{ 
 
     class Program
     {
@@ -37,34 +15,35 @@ namespace myApp
             _cancelationToken = new CancellationTokenSource();
             _cancelationToken.CancelAfter(TimeSpan.FromSeconds(3));
 
-            // try
-            // {
-            //     // Aplicacion de cancelacion de token.
-            //     var result = await Task.Run(async () =>
-            //     {
-            //         await Task.Delay(5000);
-            //         return 7;
-            //     }).WithCancellation(_cancelationToken.Token);
+            try
+            {
+                // Aplicacion de cancelacion de token.
+                var result = await Task.Run(async () =>
+                {
+                    await Task.Delay(5000);
+                    return 7;
+                }).WithCancellation(_cancelationToken.Token);
 
-            //     Console.WriteLine(result);
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine(ex.Message);
-            // }
-            // finally
-            // {
-            //     _cancelationToken.Dispose();
-            // }
+                Console.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                _cancelationToken.Dispose();
+            }
 
 
             var watch = new Stopwatch(); 
+
             watch.Start();
 
             try
             { 
 
-                List<double> results = await GenerateNumbers(1000, _cancelationToken.Token);
+                List<double> results = await GenerateNumbers(10000, _cancelationToken.Token);
 
                 await Procesator(results, _cancelationToken.Token);
 
@@ -74,11 +53,8 @@ namespace myApp
             {
                 Console.WriteLine(ex.Message);
             }
-
-
-
-
-            // var task = EvaluateOne("mayodr");
+ 
+            // var task = EvaluateOne("mayor");
             // Console.WriteLine($"Completada {task.IsCompleted}");
             // Console.WriteLine($"Cancelada {task.IsCanceled}");
             // Console.WriteLine($"Faulted {task.IsFaulted}");
@@ -92,6 +68,29 @@ namespace myApp
             //     Console.WriteLine(ex.Message);
             // }
 
+             
+        }
+
+        // Implementacion de IAsyncEnumerable para generar un iterable asincrono 
+        static async Task ProcessNames(IAsyncEnumerable<string> names, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await foreach (var name in names.WithCancellation(cancellationToken))
+            {
+                await Task.Delay(2000, cancellationToken);
+                Console.WriteLine($"Nombre: {name}");
+            }
+
+        }
+
+        
+        static async IAsyncEnumerable<string> GenerateNames(
+            [EnumeratorCancellation]CancellationToken cancellationToken = default(CancellationToken))
+        {
+            yield return "name1";
+            yield return "name2";
+            await Task.Delay(2000, cancellationToken);
+            yield return "name3"; 
+            yield return "name4";
         }
 
         static async Task<T> Retry<T>(Func<Task<T>> func, int callbacks = 3, int timeout = 500)
@@ -146,12 +145,12 @@ namespace myApp
         {
             var tasks = new List<Task<(double number, string result)>>();
 
-            using var semaphore = new SemaphoreSlim(400);
+            using var semaphore = new SemaphoreSlim(20000);
 
             tasks = results.Select(async number =>
             {
                 try
-                { 
+                {
                     await semaphore.WaitAsync();
                     return await CheckNumber(number);
                 }
