@@ -12,47 +12,69 @@ namespace myApp
 
         static async Task Main(string[] args)
         {
-            _cancelationToken = new CancellationTokenSource();
-            _cancelationToken.CancelAfter(TimeSpan.FromSeconds(3));
-
-            try
-            {
-                // Aplicacion de cancelacion de token.
-                var result = await Task.Run(async () =>
-                {
-                    await Task.Delay(5000);
-                    return 7;
-                }).WithCancellation(_cancelationToken.Token);
-
-                Console.WriteLine(result);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                _cancelationToken.Dispose();
-            }
+            var cancelAfter = TimeSpan.FromSeconds(3);
+            _cancelationToken = new CancellationTokenSource(cancelAfter); 
+            // _cancelationToken.CancelAfter(cancelAfter);
 
 
-            var watch = new Stopwatch(); 
 
-            watch.Start();
+            // var taskNew = await Task.Factory.StartNew(async () => {
+            //     await Task.Delay(1000, _cancelationToken.Token);
+            //     return 7;
+            // }).Unwrap();
 
-            try
-            { 
+            // var taskRun = await Task.Run(async () => {
+            //     await Task.Delay(1000, _cancelationToken.Token);
+            //     return 7;
+            // }); 
 
-                List<double> results = await GenerateNumbers(10000, _cancelationToken.Token);
+            // Console.WriteLine($"Task factury new {taskNew}");
+            // Console.WriteLine($"Task run {taskRun}");
 
-                await Procesator(results, _cancelationToken.Token);
 
-                Console.WriteLine($"Tareas completadas en {watch.ElapsedMilliseconds / 1000.0}");
-            }
-            catch (TaskCanceledException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            // try
+            // {
+            //     // Aplicacion de cancelacion de token.
+            //     var result = await Task.Run(async () =>
+            //     {
+            //         await Task.Delay(5000);
+            //         return 7;
+            //     }).WithCancellation(_cancelationToken.Token);
+
+            //     Console.WriteLine(result);
+            // }
+            // catch (Exception ex)
+            // {
+            //     Console.WriteLine(ex.Message);
+            // }
+            // finally
+            // {
+            //     _cancelationToken.Dispose();
+            // }
+
+
+
+
+            // var watch = new Stopwatch(); 
+
+            // watch.Start();
+
+            // try
+            // { 
+
+            //     List<double> results = await GenerateNumbers(10000, _cancelationToken.Token);
+
+            //     await Procesator(results, _cancelationToken.Token);
+
+            //     Console.WriteLine($"Tareas completadas en {watch.ElapsedMilliseconds / 1000.0}");
+            // }
+            // catch (TaskCanceledException ex)
+            // {
+            //     Console.WriteLine(ex.Message);
+            // }
+
+
+
  
             // var task = EvaluateOne("mayor");
             // Console.WriteLine($"Completada {task.IsCompleted}");
@@ -145,7 +167,7 @@ namespace myApp
         {
             var tasks = new List<Task<(double number, string result)>>();
 
-            using var semaphore = new SemaphoreSlim(20000);
+            using var semaphore = new SemaphoreSlim(1000);
 
             tasks = results.Select(async number =>
             {
