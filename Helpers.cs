@@ -3,7 +3,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace myapp
-{
+{ 
+
     public static class TaskExtensionMethods
     {
         public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using myapp;
 
 namespace myApp
-{ 
+{
 
     class Program
     {
@@ -13,84 +13,41 @@ namespace myApp
         static async Task Main(string[] args)
         {
             var cancelAfter = TimeSpan.FromSeconds(3);
-            _cancelationToken = new CancellationTokenSource(cancelAfter); 
-            // _cancelationToken.CancelAfter(cancelAfter);
+            _cancelationToken = new CancellationTokenSource(cancelAfter);
 
+            var colsArrayA = 1100;
+            var rows= 1000;
+            var colsArrayB = 1750;
 
+            var arrayA = Arrays.GenArray(rows, colsArrayA);
+            var arrayB = Arrays.GenArray(colsArrayA, colsArrayA);
+            var result = new double[rows, colsArrayB];
 
-            // var taskNew = await Task.Factory.StartNew(async () => {
-            //     await Task.Delay(1000, _cancelationToken.Token);
-            //     return 7;
-            // }).Unwrap();
+            var watch = new Stopwatch();
 
-            // var taskRun = await Task.Run(async () => {
-            //     await Task.Delay(1000, _cancelationToken.Token);
-            //     return 7;
-            // }); 
+            watch.Start();
 
-            // Console.WriteLine($"Task factury new {taskNew}");
-            // Console.WriteLine($"Task run {taskRun}");
+            await Task.Run(() => {
+                Arrays.MultiplicarMatricesSecuencial(arrayA, arrayB, result);
+            });
 
+            var secuentialTime = watch.ElapsedMilliseconds / 1000.0;
 
-            // try
-            // {
-            //     // Aplicacion de cancelacion de token.
-            //     var result = await Task.Run(async () =>
-            //     {
-            //         await Task.Delay(5000);
-            //         return 7;
-            //     }).WithCancellation(_cancelationToken.Token);
+            Console.WriteLine($"Tiempo secuencial {secuentialTime}");
 
-            //     Console.WriteLine(result);
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine(ex.Message);
-            // }
-            // finally
-            // {
-            //     _cancelationToken.Dispose();
-            // }
+            result = new double[rows, colsArrayB];
 
+            watch.Restart();
+            
 
+            await Task.Run(() => {
+                Arrays.MultiplicarMatricesParalelo(arrayA, arrayB, result);
+            });
 
+            var parallelTime = watch.ElapsedMilliseconds / 1000.0;
 
-            // var watch = new Stopwatch(); 
+            Console.WriteLine($"Tiempo paralelo {parallelTime}");
 
-            // watch.Start();
-
-            // try
-            // { 
-
-            //     List<double> results = await GenerateNumbers(10000, _cancelationToken.Token);
-
-            //     await Procesator(results, _cancelationToken.Token);
-
-            //     Console.WriteLine($"Tareas completadas en {watch.ElapsedMilliseconds / 1000.0}");
-            // }
-            // catch (TaskCanceledException ex)
-            // {
-            //     Console.WriteLine(ex.Message);
-            // }
-
-
-
- 
-            // var task = EvaluateOne("mayor");
-            // Console.WriteLine($"Completada {task.IsCompleted}");
-            // Console.WriteLine($"Cancelada {task.IsCanceled}");
-            // Console.WriteLine($"Faulted {task.IsFaulted}");
-
-            // try
-            // {
-            //     await task;
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine(ex.Message);
-            // }
-
-             
         }
 
         // Implementacion de IAsyncEnumerable para generar un iterable asincrono 
@@ -104,14 +61,14 @@ namespace myApp
 
         }
 
-        
+
         static async IAsyncEnumerable<string> GenerateNames(
-            [EnumeratorCancellation]CancellationToken cancellationToken = default(CancellationToken))
+            [EnumeratorCancellation] CancellationToken cancellationToken = default(CancellationToken))
         {
             yield return "name1";
             yield return "name2";
             await Task.Delay(2000, cancellationToken);
-            yield return "name3"; 
+            yield return "name3";
             yield return "name4";
         }
 
