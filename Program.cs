@@ -12,41 +12,56 @@ namespace myApp
 
         static async Task Main(string[] args)
         {
-            var cancelAfter = TimeSpan.FromSeconds(3);
+            var cancelAfter = TimeSpan.FromSeconds(60);
             _cancelationToken = new CancellationTokenSource(cancelAfter);
-
-            var colsArrayA = 1100;
-            var rows= 1000;
-            var colsArrayB = 1750;
-
-            var arrayA = Arrays.GenArray(rows, colsArrayA);
-            var arrayB = Arrays.GenArray(colsArrayA, colsArrayA);
-            var result = new double[rows, colsArrayB];
 
             var watch = new Stopwatch();
 
             watch.Start();
 
-            await Task.Run(() => {
-                Arrays.MultiplicarMatricesSecuencial(arrayA, arrayB, result);
-            });
 
-            var secuentialTime = watch.ElapsedMilliseconds / 1000.0;
+            // Configuracion de grados de paralelismo
+            for (int i = 1; i < 8; i++)
+            {
+                await ArrayTestStart(i, _cancelationToken.Token);
 
-            Console.WriteLine($"Tiempo secuencial {secuentialTime}");
+                var parallelTime = watch.ElapsedMilliseconds / 1000.0;
 
-            result = new double[rows, colsArrayB];
+                Console.WriteLine($"Tiempo de realizacion: {parallelTime}");
 
-            watch.Restart();
-            
+                watch.Restart();
+            }
 
-            await Task.Run(() => {
-                Arrays.MultiplicarMatricesParalelo(arrayA, arrayB, result);
-            });
+            // await Task.Run(() =>
+            // {
+            //     Arrays.MultiplicarMatricesSecuencial(arrayA, arrayB, result);
+            // });
 
-            var parallelTime = watch.ElapsedMilliseconds / 1000.0;
+            // Action multiplyArra0 = () => {
+            //     Arrays.MultiplicarMatricesSecuencial(arrayA, arrayB, result);
+            // };
 
-            Console.WriteLine($"Tiempo paralelo {parallelTime}");
+            // Action multiplyArrays = () => {
+            //     Arrays.MultiplicarMatricesParalelo(arrayA, arrayB, result);
+            // };
+
+            // Action[] actions = new Action[] { multiplyArra0, multiplyArrays };
+
+            // foreach(var action in actions)
+            // {
+            //     action();
+            // }
+
+            // var secuentialTime = watch.ElapsedMilliseconds / 1000.0;
+
+            // Console.WriteLine($"Tiempo secuencial {secuentialTime}");
+
+            // watch.Restart();
+
+            // Parallel.Invoke(actions);
+
+
+
 
         }
 
@@ -57,6 +72,33 @@ namespace myApp
             {
                 await Task.Delay(2000, cancellationToken);
                 Console.WriteLine($"Nombre: {name}");
+            }
+
+        }
+
+        static async Task ArrayTestStart(int parallelGrade, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var colsArrayA = 1100;
+            var rows = 1000;
+            var colsArrayB = 1750;
+
+            var arrayA = Arrays.GenArray(rows, colsArrayA);
+            var arrayB = Arrays.GenArray(colsArrayA, colsArrayA);
+            var result = new double[rows, colsArrayB];
+
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    Arrays.MultiplicarMatricesParalelo(arrayA, arrayB, result, cancellationToken, parallelGrade);
+                });
+
+                Console.WriteLine($"Grado de paralelismo {parallelGrade}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Operacion cancelada");
             }
 
         }

@@ -41,24 +41,36 @@ namespace myApp
         }
 
         public static void MultiplicarMatricesParalelo(double[,] matA, double[,] matB,
-                                        double[,] result)
+                                        double[,] result,
+                                         CancellationToken token = default(CancellationToken),
+                                         int parallelGrade = -1
+                                         )
         {
             int matACols = matA.GetLength(1);
             int matBCols = matB.GetLength(1);
             int matARows = matA.GetLength(0);
 
-            Parallel.For(0, matARows, i =>
+            try
             {
-                for (int j = 0; j < matBCols; j++)
-                {
-                    double temp = 0;
-                    for (int k = 0; k < matACols; k++)
+                Parallel.For(0, matARows,
+                    new ParallelOptions() { CancellationToken = token, MaxDegreeOfParallelism = parallelGrade },
+                    i =>
                     {
-                        temp += matA[i, k] * matB[k, j];
-                    }
-                    result[i, j] += temp;
-                }
-            });
+                        for (int j = 0; j < matBCols; j++)
+                        {
+                            double temp = 0;
+                            for (int k = 0; k < matACols; k++)
+                            {
+                                temp += matA[i, k] * matB[k, j];
+                            }
+                            result[i, j] += temp;
+                        }
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("La operacion fue cancelada");
+            }
         }
 
     }
