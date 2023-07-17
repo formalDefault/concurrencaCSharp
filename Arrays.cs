@@ -3,7 +3,9 @@ namespace myApp
     public static class Arrays
     {
         public static double[,] GenArray(int rows, int cols)
-        {
+        { 
+            Thread.Sleep(1000);
+
             Random random = new Random();
 
             double[,] matriz = new double[rows, cols];

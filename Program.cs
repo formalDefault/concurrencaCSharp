@@ -21,42 +21,19 @@ namespace myApp
 
 
             // PLINQ
-
-            // var font = Enumerable.Range(0, 2000);
-
-            // var pairElements = font
-            //     .AsParallel()
-            //     .AsOrdered()
-            //     .WithDegreeOfParallelism(1)
-            //     .WithCancellation(_cancelationToken.Token)
-            //     .Where(num => num % 2 == 0)
-            //     .ToList(); 
-
-            var arrays = Enumerable.Range(0, 500)
-                .Select(num => Arrays.GenArray(500, 500))
-                .ToList();
-
-            Console.WriteLine($"Matrices generadas ");
-
-            var sumArrays = arrays.Aggregate(Arrays.SumarMatricesSecuencial);
-             
-            var secuentialTime = watch.ElapsedMilliseconds / 1000.0;
-
-            Console.WriteLine($"Tiempo secuencial {secuentialTime}");
-
-            watch.Restart();
-
-            var sumArraysParallel = arrays
+            var parallelQuery = Enumerable
+                .Range(0, 10)
                 .AsParallel()
-                .Aggregate(Arrays.SumarMatricesSecuencial);
+                .WithDegreeOfParallelism(2)
+                .Select(x => Arrays.GenArray(100, 100));
 
-            
-            var parallelTime = watch.ElapsedMilliseconds / 1000.0;
+            // foreach (var item in parallelQuery)
+            // {
+            //     Console.WriteLine(item[0, 0]);
+            // }
 
-            Console.WriteLine($"Tiempo paralelo {parallelTime}");
 
-
-
+            parallelQuery.ForAll(arr => Console.WriteLine(arr[0, 0]));
 
             // var incrementedValue = 0;
             // var sumatoryValue = 0;
