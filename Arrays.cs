@@ -19,6 +19,31 @@ namespace myApp
             return matriz;
         }
 
+        public static double[,] SumarMatricesSecuencial(double[,] matA, double[,] matB)
+        {
+            int matARows = matA.GetLength(0);
+            int matACols = matA.GetLength(1);
+            int matBRows = matB.GetLength(0);
+            int matBCols = matB.GetLength(1);
+
+            if (matARows != matBRows || matACols != matBCols)
+            {
+                throw new ApplicationException("Las matrices deben tener las mismas dimensiones");
+            }
+
+            double[,] result = new double[matARows, matACols];
+
+            for (int i = 0; i < matARows; i++)
+            {
+                for (int j = 0; j < matBCols; j++)
+                {
+                    result[i, j] = matA[i, j] + matB[i, j];
+                }
+            }
+
+            return result;
+        }
+
         public static void MultiplicarMatricesSecuencial(double[,] matA, double[,] matB,
                                                 double[,] result)
         {
@@ -53,7 +78,11 @@ namespace myApp
             try
             {
                 Parallel.For(0, matARows,
-                    new ParallelOptions() { CancellationToken = token, MaxDegreeOfParallelism = parallelGrade },
+                    new ParallelOptions()
+                    {
+                        CancellationToken = token,
+                        MaxDegreeOfParallelism = parallelGrade
+                    },
                     i =>
                     {
                         for (int j = 0; j < matBCols; j++)

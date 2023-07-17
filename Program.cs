@@ -19,25 +19,61 @@ namespace myApp
 
             watch.Start();
 
-            var incrementedValue = 0;
-            var sumatoryValue = 0;
-            var mutex = new Object();
 
-            Parallel.For(0, 10000, number =>
-            {
-                // Interlocked.Increment(ref incrementedValue);
+            // PLINQ
 
-                // Interlocked.Add(ref sumatoryValue, incrementedValue);
+            // var font = Enumerable.Range(0, 2000);
 
-                lock (mutex)
-                {
-                    incrementedValue++;
-                    sumatoryValue += incrementedValue;
-                }
-            });
+            // var pairElements = font
+            //     .AsParallel()
+            //     .AsOrdered()
+            //     .WithDegreeOfParallelism(1)
+            //     .WithCancellation(_cancelationToken.Token)
+            //     .Where(num => num % 2 == 0)
+            //     .ToList(); 
 
-            Console.WriteLine($"Valor incrementado {incrementedValue}");
-            Console.WriteLine($"Valor sumado {sumatoryValue}");
+            var arrays = Enumerable.Range(0, 500)
+                .Select(num => Arrays.GenArray(500, 500))
+                .ToList();
+
+            Console.WriteLine($"Matrices generadas ");
+
+            var sumArrays = arrays.Aggregate(Arrays.SumarMatricesSecuencial);
+             
+            var secuentialTime = watch.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine($"Tiempo secuencial {secuentialTime}");
+
+            watch.Restart();
+
+            var sumArraysParallel = arrays
+                .AsParallel()
+                .Aggregate(Arrays.SumarMatricesSecuencial);
+
+            
+            var parallelTime = watch.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine($"Tiempo paralelo {parallelTime}");
+
+
+
+
+            // var incrementedValue = 0;
+            // var sumatoryValue = 0;
+            // var mutex = new Object();
+
+            // Parallel.For(0, 10000, number =>
+            // {
+            //     lock (mutex)
+            //     {
+            //         incrementedValue++;
+            //         sumatoryValue += incrementedValue;
+            //     }
+            // });
+
+            // Console.WriteLine($"Valor incrementado {incrementedValue}");
+
+            // Console.WriteLine($"Valor sumado {sumatoryValue}");
 
 
 
@@ -52,6 +88,8 @@ namespace myApp
 
             //     watch.Restart();
             // }
+
+
 
             // await Task.Run(() =>
             // {
