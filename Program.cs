@@ -19,19 +19,26 @@ namespace myApp
 
             watch.Start();
 
-            var valWithoutInterlocked = 0;
+            var incrementedValue = 0;
+            var sumatoryValue = 0;
+            var mutex = new Object();
 
-            Parallel.For(0, 1000000, number => valWithoutInterlocked++);
+            Parallel.For(0, 10000, number =>
+            {
+                // Interlocked.Increment(ref incrementedValue);
 
-            Console.WriteLine($"Sumatoria sin interlocked {valWithoutInterlocked}");
+                // Interlocked.Add(ref sumatoryValue, incrementedValue);
 
-            var valInterlocked = 0;
+                lock (mutex)
+                {
+                    incrementedValue++;
+                    sumatoryValue += incrementedValue;
+                }
+            });
 
-            Parallel.For(0, 1000000, number => Interlocked.Increment(ref valInterlocked));
+            Console.WriteLine($"Valor incrementado {incrementedValue}");
+            Console.WriteLine($"Valor sumado {sumatoryValue}");
 
-            Console.WriteLine($"Sumatoria con interlocked {valInterlocked}");
-
-            
 
 
             // Configuracion de grados de paralelismo
