@@ -19,18 +19,32 @@ namespace myApp
 
             watch.Start();
 
+            var valWithoutInterlocked = 0;
+
+            Parallel.For(0, 1000000, number => valWithoutInterlocked++);
+
+            Console.WriteLine($"Sumatoria sin interlocked {valWithoutInterlocked}");
+
+            var valInterlocked = 0;
+
+            Parallel.For(0, 1000000, number => Interlocked.Increment(ref valInterlocked));
+
+            Console.WriteLine($"Sumatoria con interlocked {valInterlocked}");
+
+            
+
 
             // Configuracion de grados de paralelismo
-            for (int i = 1; i < 8; i++)
-            {
-                await ArrayTestStart(i, _cancelationToken.Token);
+            // for (int i = 1; i < 8; i++)
+            // {
+            //     await ArrayTestStart(i, _cancelationToken.Token);
 
-                var parallelTime = watch.ElapsedMilliseconds / 1000.0;
+            //     var parallelTime = watch.ElapsedMilliseconds / 1000.0;
 
-                Console.WriteLine($"Tiempo de realizacion: {parallelTime}");
+            //     Console.WriteLine($"Tiempo de realizacion: {parallelTime}");
 
-                watch.Restart();
-            }
+            //     watch.Restart();
+            // }
 
             // await Task.Run(() =>
             // {
